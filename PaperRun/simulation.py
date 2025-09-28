@@ -3,36 +3,11 @@ import os
 import yfinance as yf
 from datetime import datetime
 
-accountView = {
-    "Initial": {
-        "AccountValue": 0,
-        "PositionsOpened": 0,
-        "LongPositions": 0,
-        "ShortPositions": 0,
-        "PositionsWon": 0,
-        "PositionsLost": 0,
-        "CapitalGained": 0,
-        "AmountInvested": 0,
-        "UnitesBought": 0,
-        "LongPosition": False,
-        "Position_PnL": 0,
-    }
-}
-
+# -- Simulation File ---
 filename = "account.json"
 
 
-def update_accountView(accountView):
-    if os.path.exists(filename):
-        with open(filename, "w") as f:
-            data = json.load(f)
-            data.udpate(accountView)
-    else:
-        with open(filename, "w") as f:
-            json.dump(accountView, f, indent=4)
-
-
-def get_TickerHistory(ticker=None, history=0, interval=0):
+def get_TickerHistory(ticker: str = "", history: str = "1d", interval: str = "1h"):
     """
     get_TickerHistory(ticker=None, history=0, interval=0)
 
@@ -106,7 +81,7 @@ def get_TickerHistory(ticker=None, history=0, interval=0):
     ticker_value = None
     ticker_data = {}
 
-    if ticker is None:
+    if ticker == "":
         print(
             "Please provide a valid ticker from the yahoo finance website \nExample: [https://finance.yahoo.com/quote/AAPL/] => AAPL"
         )
@@ -164,10 +139,48 @@ def get_TickerHistory(ticker=None, history=0, interval=0):
             print("3. Exception Occured: ", e)
 
 
-def simulation(ticker_name=None, history=0, interval=0):
-    data = get_TickerHistory(ticker=ticker_name, history=history, interval=interval)
-    return data
+accountView = {
+    "Initial": {
+        "AccountValue": 0,
+        "PositionsOpened": 0,
+        "LongPositions": 0,
+        "ShortPositions": 0,
+        "PositionsWon": 0,
+        "PositionsLost": 0,
+        "CapitalGained": 0,
+        "AmountInvested": 0,
+        "UnitesBought": 0,
+        "LongPosition": False,
+        "Position_PnL": 0,
+    }
+}
 
 
-data = simulation("AAPL")
-print(data)
+def simulation(
+    ticker_name: str = "",
+    history: str = "1d",
+    interval: str = "1h",
+    buy: bool = False,
+    sell: bool = False,
+    initial_balance: int = 0,
+    save_account: bool = False,
+    savefile_path: str = "simulation_savefile.json",
+):
+    if ticker_name == "":
+        pass
+    else:
+        data = get_TickerHistory(ticker=ticker_name, history=history, interval=interval)
+
+    accountView["Initial"]["AccountValue"] = initial_balance
+
+    if save_account:
+        with open(savefile_path, "w") as f:
+            json.dump(accountView, f, indent=4)
+
+        print("\nTrading Simulation file saved at: ", savefile_path)
+
+    return accountView
+
+
+simulation(initial_balance=100, save_account=True)
+print(accountView)
