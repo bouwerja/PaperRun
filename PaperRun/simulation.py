@@ -2,6 +2,8 @@ import json
 import os
 import yfinance as yf
 from datetime import datetime
+from typing import Callable
+from typeing import Optional
 
 # -- Simulation File ---
 filename = "account.json"
@@ -139,6 +141,7 @@ def get_TickerHistory(ticker: str = "", history: str = "1d", interval: str = "1h
             print("3. Exception Occured: ", e)
 
 
+# --- Trading Simulation ---
 accountView = {
     "Initial": {
         "AccountValue": 0,
@@ -156,24 +159,48 @@ accountView = {
 }
 
 
+# user fucntion to give some signal data i.e. Buy or Sell as a binary list [(BUY), (SELL)]:
+# [1, 0], [0, 1] or, [0, 0]
+# [1, 1] is not allowed
+
+
 def simulation(
-    ticker_name: str = "",
-    history: str = "1d",
-    interval: str = "1h",
-    buy: bool = False,
-    sell: bool = False,
+    signal_list: Optional[list] = [],
     initial_balance: int = 0,
-    save_account: bool = False,
+    create_savefile: bool = False,
+    see_iteration: bool = False,
     savefile_path: str = "simulation_savefile.json",
+    user_func: Optional[Callable[..., list]] = None,
+    *args,
+    **kwargs,
 ):
-    if ticker_name == "":
-        pass
-    else:
-        data = get_TickerHistory(ticker=ticker_name, history=history, interval=interval)
+    if user_func:
+        signal_list = user_func(*args, **kwargs)
+        if not isinstance(signal_list, list):
+            raise ValueError(
+                "Function must return a binary list. \nSee Examples or Description"
+            )
+        if not all(isinstance(x, int) and x in (0, 1) for x in signal_list):
+            raise ValueError(
+                "Function must return a binary list with only 0 or 1 (no decimals). \n See Examples or Description"
+            )
+
+    if see_iteration:
+        print(
+            f"Running simulation with signal_list={signal_list} and initial_balance={initial_balance}"
+        )
 
     accountView["Initial"]["AccountValue"] = initial_balance
 
-    if save_account:
+    if len(accountView.keys()) == 1:
+        trade_number = 1
+        accountView[str(trade_number)] = accountView["Initial"].copy()
+    else:
+        trade_keys = [int(k) for k in accountView.keys() if k != "Initial"]
+        trade_number = max(trade_keys) + 1
+        accountView[str(trade_number)] = accountView[str(max(trade_keys))].copy()
+
+    if create_savefile:
         with open(savefile_path, "w") as f:
             json.dump(accountView, f, indent=4)
 
