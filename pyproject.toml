@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PaperRun"
+version = "0.1.0"
+description = "Financial Markets trading simulation tool"
+authors = [{ name = "Jason", email = "bouwerjason1@gmail.com" }]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.6"
+dependencies = ["yfinance"]
+
+[project.urls]
+"Homepage" = "https://github.com/bouwerja/PaperRun"
